@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boîte à outils cyber</title>
+<meta name="description" content="Annuaire d'outils et de ressources : administration système, pentest, OSINT, forensique, défense.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--ink:#14202e;--mute:#5b6878;--line:#d5dbe2;--acc:#1f4fd8;--accbg:#e3eaff;--r:6px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f151c;--panel:#161e28;--ink:#e6ebf1;--mute:#93a0b0;--line:#27323f;--acc:#7da2ff;--accbg:#1c2a4a}}
+:root[data-theme=dark]{--bg:#0f151c;--panel:#161e28;--ink:#e6ebf1;--mute:#93a0b0;--line:#27323f;--acc:#7da2ff;--accbg:#1c2a4a}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+header{max-width:1100px;margin:0 auto;padding:40px 20px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;margin:0;letter-spacing:-.03em;font-weight:700}
+.sub{margin:8px 0 0;color:var(--mute);max-width:52ch}
+button{font:inherit;cursor:pointer;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:6px 12px}
+.bar{max-width:1100px;margin:0 auto;padding:8px 20px 16px}
+#q{width:100%;font:inherit;padding:14px 16px;border:2px solid var(--ink);border-radius:var(--r);background:var(--panel);color:var(--ink)}
+#q:focus{outline:none;border-color:var(--acc)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px 40px;display:grid;grid-template-columns:210px 1fr;gap:28px}
+nav{position:sticky;top:calc(12px + env(safe-area-inset-top,0px));align-self:start;display:flex;flex-direction:column;gap:2px}
+nav button{border:0;background:none;text-align:left;display:flex;justify-content:space-between;padding:7px 10px;color:var(--mute)}
+nav button:hover{background:var(--panel)}
+nav button[aria-pressed=true]{background:var(--ink);color:var(--bg);font-weight:600}
+nav span{opacity:.7;font-variant-numeric:tabular-nums}
+section{margin-bottom:30px}
+h2{font-size:1.25rem;margin:0 0 4px;letter-spacing:-.01em}
+.d{margin:0 0 10px;color:var(--mute);font-size:.92rem}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.list a{display:grid;grid-template-columns:200px 1fr;gap:14px;padding:11px 14px;border-top:1px solid var(--line)}
+.list a:first-child{border-top:0}
+.list a:hover{background:var(--accbg)}
+.n{font-weight:600}
+.n::after{content:" ↗";color:var(--acc);font-weight:400}
+.t{color:var(--mute)}
+.empty{padding:30px;text-align:center;color:var(--mute)}
+.note{border-left:3px solid var(--acc);padding:4px 14px;color:var(--mute);font-size:.9rem;margin:0 0 24px}
+footer{max-width:1100px;margin:0 auto;padding:0 20px 40px;color:var(--mute);font-size:.85rem}
+@media(max-width:760px){
+.wrap{grid-template-columns:1fr;gap:12px}
+nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}
+nav button{white-space:nowrap;gap:8px;border:1px solid var(--line)}
+.list a{grid-template-columns:1fr;gap:0}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Boîte à outils cyber</h1>
+    <p class="sub">Outils et références pour administrer, tester, surveiller et apprendre. Tout est gratuit, open source ou avec une édition gratuite, sauf mention contraire.</p>
+  </div>
+  <button id="theme" type="button">Thème</button>
+</header>
+<div class="bar"><input id="q" type="search" placeholder="Rechercher : nmap, mot de passe, forensique…  (touche /)" aria-label="Rechercher"></div>
+<div class="wrap">
+  <nav id="nav" aria-label="Catégories"></nav>
+  <main>
+    <p class="note">N'utilisez les outils offensifs que sur des systèmes qui vous appartiennent ou pour lesquels vous avez une autorisation écrite.</p>
+    <div id="out"></div>
+  </main>
+</div>
+<footer>Les liens pointent vers les sites officiels. Vérifiez licences et conditions d'usage avant de déployer un outil.</footer>
+<script>
+const CATS={
+sys:["Administration système","Durcir, superviser et gérer vos machines."],
+net:["Réseau","Découvrir, capturer et analyser le trafic."],
+web:["Pentest web","Auditer applications, API et surface exposée."],
+exp:["Exploitation et Active Directory","Frameworks, post-exploitation et élévation de privilèges."],
+pwd:["Mots de passe et chiffrement","Audit de hashs, gestion des secrets, outils de conversion."],
+rev:["Reverse et analyse de malware","Désassemblage, sandboxes et réputation de fichiers."],
+osint:["OSINT et reconnaissance","Cartographier une cible à partir de sources publiques."],
+dfir:["Forensique et réponse à incident","Analyser mémoire, disque et journaux."],
+def:["Défense et monitoring","Détection, pare-feu, scan de vulnérabilités."],
+learn:["Apprentissage et CTF","Plateformes, labs et wordlists."],
+ref:["Références et veille","Bases de vulnérabilités, référentiels, sources françaises."]};
+const D=[
+["sys","Sysinternals","https://learn.microsoft.com/sysinternals/","Suite Microsoft : Process Explorer, Autoruns, TCPView."],
+["sys","Lynis","https://cisofy.com/lynis/","Audit de sécurité Linux/Unix en ligne de commande."],
+["sys","CIS Benchmarks","https://www.cisecurity.org/cis-benchmarks","Guides de durcissement pour OS, cloud et logiciels."],
+["sys","Ansible","https://www.ansible.com","Automatisation de configuration sans agent."],
+["sys","Fail2ban","https://github.com/fail2ban/fail2ban","Bannit les IP qui échouent trop de connexions."],
+["sys","WireGuard","https://www.wireguard.com","VPN moderne, simple et rapide."],
+["sys","Docker Bench for Security","https://github.com/docker/docker-bench-security","Vérifie vos hôtes Docker contre les bonnes pratiques."],
+["sys","Trivy","https://github.com/aquasecurity/trivy","Scan d'images, dépôts, IaC et dépendances."],
+["sys","htop","https://htop.dev","Moniteur de processus interactif."],
+["sys","tmux","https://github.com/tmux/tmux","Multiplexeur de terminal pour sessions persistantes."],
+["net","Nmap","https://nmap.org","Le standard du scan de ports et de la découverte de services."],
+["net","Wireshark","https://www.wireshark.org","Capture et analyse de paquets en profondeur."],
+["net","tcpdump","https://www.tcpdump.org","Capture de paquets légère en ligne de commande."],
+["net","Masscan","https://github.com/robertdavidgraham/masscan","Scanner de ports massivement rapide."],
+["net","RustScan","https://github.com/RustScan/RustScan","Scan de ports rapide qui passe le relais à Nmap."],
+["net","Bettercap","https://www.bettercap.org","Outil d'attaque et de test réseau, Wi-Fi, BLE, MITM."],
+["net","Aircrack-ng","https://www.aircrack-ng.org","Audit de la sécurité des réseaux Wi-Fi."],
+["net","Zeek","https://zeek.org","Analyse du trafic réseau et génération de journaux riches."],
+["web","Burp Suite","https://portswigger.net/burp","Proxy d'interception, référence du pentest web (édition gratuite)."],
+["web","OWASP ZAP","https://www.zaproxy.org","Scanner et proxy web open source."],
+["web","sqlmap","https://sqlmap.org","Détection et exploitation automatisées d'injections SQL."],
+["web","ffuf","https://github.com/ffuf/ffuf","Fuzzer web rapide : répertoires, paramètres, vhosts."],
+["web","Gobuster","https://github.com/OJ/gobuster","Brute-force de répertoires, DNS et vhosts."],
+["web","Nuclei","https://github.com/projectdiscovery/nuclei","Scanner à base de templates communautaires."],
+["web","httpx","https://github.com/projectdiscovery/httpx","Sonde HTTP rapide pour de grandes listes d'hôtes."],
+["web","Subfinder","https://github.com/projectdiscovery/subfinder","Énumération passive de sous-domaines."],
+["web","Amass","https://github.com/owasp-amass/amass","Cartographie de la surface d'attaque externe."],
+["web","Nikto","https://github.com/sullo/nikto","Scanner de serveurs web : configurations et fichiers à risque."],
+["web","WPScan","https://wpscan.com","Scanner de vulnérabilités WordPress."],
+["exp","Metasploit","https://www.metasploit.com","Framework d'exploitation et de post-exploitation."],
+["exp","Impacket","https://github.com/fortra/impacket","Bibliothèque Python pour protocoles Windows (SMB, Kerberos…)."],
+["exp","NetExec","https://github.com/Pennyw0rth/NetExec","Audit de réseaux Windows/AD, successeur de CrackMapExec."],
+["exp","BloodHound","https://github.com/SpecterOps/BloodHound","Visualise les chemins d'attaque dans Active Directory."],
+["exp","Responder","https://github.com/lgandx/Responder","Empoisonnement LLMNR/NBT-NS/mDNS, capture de hashs."],
+["exp","Sliver","https://github.com/BishopFox/sliver","Framework C2 open source pour red team."],
+["exp","PEASS-ng (LinPEAS/WinPEAS)","https://github.com/peass-ng/PEASS-ng","Recherche automatisée de vecteurs d'élévation de privilèges."],
+["exp","GTFOBins","https://gtfobins.github.io","Binaires Unix détournables pour contourner des restrictions."],
+["exp","LOLBAS","https://lolbas-project.github.io","Équivalent Windows : binaires et scripts légitimes détournables."],
+["exp","Kali Linux","https://www.kali.org","Distribution dédiée au test d'intrusion."],
+["exp","Parrot Security","https://parrotsec.org","Alternative à Kali, orientée sécurité et vie privée."],
+["pwd","Hashcat","https://hashcat.net/hashcat/","Cassage de hashs accéléré par GPU."],
+["pwd","John the Ripper","https://www.openwall.com/john/","Cassage de mots de passe polyvalent."],
+["pwd","Hydra","https://github.com/vanhauser-thc/thc-hydra","Brute-force en ligne sur de nombreux protocoles."],
+["pwd","CyberChef","https://gchq.github.io/CyberChef/","Couteau suisse : encodage, chiffrement, extraction de données."],
+["pwd","KeePassXC","https://keepassxc.org","Gestionnaire de mots de passe local et open source."],
+["pwd","Bitwarden","https://bitwarden.com","Gestionnaire de mots de passe synchronisé, auto-hébergeable."],
+["pwd","Have I Been Pwned","https://haveibeenpwned.com","Vérifie si une adresse apparaît dans des fuites."],
+["rev","Ghidra","https://ghidra-sre.org","Suite de rétro-ingénierie de la NSA, gratuite."],
+["rev","Cutter","https://cutter.re","Interface graphique de Rizin pour le reverse."],
+["rev","x64dbg","https://x64dbg.com","Débogueur Windows open source."],
+["rev","capa","https://github.com/mandiant/capa","Identifie les capacités d'un exécutable."],
+["rev","VirusTotal","https://www.virustotal.com","Analyse de fichiers, URL, domaines et IP."],
+["rev","ANY.RUN","https://any.run","Sandbox interactive en ligne (offre gratuite limitée)."],
+["rev","Hybrid Analysis","https://www.hybrid-analysis.com","Sandbox gratuite avec rapports détaillés."],
+["osint","Shodan","https://www.shodan.io","Moteur de recherche des appareils exposés sur Internet."],
+["osint","Censys","https://search.censys.io","Inventaire des hôtes et certificats d'Internet."],
+["osint","crt.sh","https://crt.sh","Recherche dans les journaux de transparence des certificats."],
+["osint","theHarvester","https://github.com/laramies/theHarvester","Collecte d'e-mails, sous-domaines et noms publics."],
+["osint","SpiderFoot","https://github.com/smicallef/spiderfoot","Automatisation de la collecte OSINT."],
+["osint","Maltego","https://www.maltego.com","Graphes de relations entre entités (édition gratuite limitée)."],
+["osint","urlscan.io","https://urlscan.io","Scan et capture de pages web suspectes."],
+["osint","OSINT Framework","https://osintframework.com","Arborescence de sources et outils OSINT."],
+["dfir","Autopsy","https://www.autopsy.com","Analyse forensique de disques."],
+["dfir","Volatility 3","https://github.com/volatilityfoundation/volatility3","Analyse de dumps mémoire."],
+["dfir","Velociraptor","https://github.com/Velocidex/velociraptor","Collecte et chasse aux menaces sur des parcs de machines."],
+["dfir","Eric Zimmerman's Tools","https://ericzimmerman.github.io","Outils d'analyse d'artefacts Windows."],
+["dfir","YARA","https://github.com/VirusTotal/yara","Règles pour identifier et classer des malwares."],
+["dfir","Sigma","https://github.com/SigmaHQ/sigma","Format ouvert de règles de détection pour les journaux."],
+["dfir","TheHive","https://strangebee.com","Plateforme de gestion d'incidents."],
+["def","Wazuh","https://wazuh.com","SIEM et XDR open source."],
+["def","Suricata","https://suricata.io","IDS/IPS réseau haute performance."],
+["def","Security Onion","https://securityonionsolutions.com","Distribution de supervision et de chasse aux menaces."],
+["def","CrowdSec","https://www.crowdsec.net","Détection collaborative des comportements malveillants."],
+["def","Greenbone / OpenVAS","https://www.greenbone.net","Scanner de vulnérabilités complet."],
+["def","MISP","https://www.misp-project.org","Partage d'indicateurs de compromission."],
+["def","pfSense","https://www.pfsense.org","Pare-feu et routeur open source."],
+["def","OPNsense","https://opnsense.org","Pare-feu open source, fork moderne de pfSense."],
+["learn","Root-Me","https://www.root-me.org","Plateforme française de challenges, très riche."],
+["learn","TryHackMe","https://tryhackme.com","Parcours guidés, idéal pour débuter."],
+["learn","Hack The Box","https://www.hackthebox.com","Machines et labs de difficulté croissante."],
+["learn","PortSwigger Web Security Academy","https://portswigger.net/web-security","Cours web gratuits avec labs pratiques."],
+["learn","OverTheWire","https://overthewire.org","Wargames pour apprendre Linux et la sécurité."],
+["learn","picoCTF","https://picoctf.org","CTF pédagogique pour débutants."],
+["learn","VulnHub","https://www.vulnhub.com","Machines vulnérables à télécharger et attaquer en local."],
+["learn","CTFtime","https://ctftime.org","Calendrier et classements des CTF."],
+["learn","HackTricks","https://book.hacktricks.wiki","Gros wiki de techniques de pentest."],
+["learn","PayloadsAllTheThings","https://github.com/swisskyrepo/PayloadsAllTheThings","Payloads et méthodologies par type de vulnérabilité."],
+["learn","SecLists","https://github.com/danielmiessler/SecLists","Wordlists pour fuzzing, mots de passe, noms d'utilisateur."],
+["ref","MITRE ATT&CK","https://attack.mitre.org","Matrice des tactiques et techniques adverses."],
+["ref","OWASP Top 10","https://owasp.org/Top10/","Les risques majeurs des applications web."],
+["ref","CVE","https://www.cve.org","Référentiel des vulnérabilités publiques."],
+["ref","NVD","https://nvd.nist.gov","Base du NIST : scores CVSS et détails des CVE."],
+["ref","CISA KEV","https://www.cisa.gov/known-exploited-vulnerabilities-catalog","Vulnérabilités activement exploitées."],
+["ref","Exploit-DB","https://www.exploit-db.com","Archive d'exploits et de preuves de concept."],
+["ref","CWE","https://cwe.mitre.org","Catalogue des types de faiblesses logicielles."],
+["ref","CERT-FR","https://www.cert.ssi.gouv.fr","Alertes et avis de sécurité en français."],
+["ref","ANSSI","https://cyber.gouv.fr","Guides et référentiels de l'agence nationale."],
+["ref","Cybermalveillance.gouv.fr","https://www.cybermalveillance.gouv.fr","Assistance aux victimes et sensibilisation."],
+["ref","Krebs on Security","https://krebsonsecurity.com","Enquêtes sur la cybercriminalité."]
+];
+const $=s=>document.querySelector(s),out=$("#out"),nav=$("#nav"),q=$("#q");
+let cat="all";
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function render(){
+  const t=norm(q.value.trim());
+  const hit=d=>(cat==="all"||d[0]===cat)&&(!t||norm(d[1]+" "+d[3]+" "+CATS[d[0]][0]).includes(t));
+  nav.textContent="";
+  const mk=(k,label,n)=>{const b=document.createElement("button");b.type="button";b.setAttribute("aria-pressed",cat===k);
+    b.append(label);const s=document.createElement("span");s.textContent=n;b.append(s);b.onclick=()=>{cat=k;render()};nav.append(b)};
+  const cnt=k=>D.filter(d=>(k==="all"||d[0]===k)&&(!t||norm(d[1]+" "+d[3]+" "+CATS[d[0]][0]).includes(t))).length;
+  mk("all","Tout",cnt("all"));
+  for(const k in CATS)mk(k,CATS[k][0],cnt(k));
+  out.textContent="";
+  let any=false;
+  for(const k in CATS){
+    const items=D.filter(d=>d[0]===k&&hit(d));
+    if(!items.length)continue;any=true;
+    const s=document.createElement("section");
+    const h=document.createElement("h2");h.textContent=CATS[k][0];
+    const p=document.createElement("p");p.className="d";p.textContent=CATS[k][1];
+    const l=document.createElement("div");l.className="list";
+    for(const d of items){
+      const a=document.createElement("a");a.href=d[2];a.target="_blank";a.rel="noopener noreferrer";
+      const n=document.createElement("span");n.className="n";n.textContent=d[1];
+      const x=document.createElement("span");x.className="t";x.textContent=d[3];
+      a.append(n,x);l.append(a);
+    }
+    s.append(h,p,l);out.append(s);
+  }
+  if(!any){const e=document.createElement("div");e.className="empty";e.textContent="Aucun résultat. Essayez un autre mot-clé ou choisissez « Tout ».";out.append(e)}
+}
+q.addEventListener("input",render);
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus()}});
+$("#theme").onclick=()=>{
+  const r=document.documentElement,dark=matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur=r.dataset.theme||(dark?"dark":"light");
+  r.dataset.theme=cur==="dark"?"light":"dark";
+};
+render();
+</script>
+</body>
+</html>
